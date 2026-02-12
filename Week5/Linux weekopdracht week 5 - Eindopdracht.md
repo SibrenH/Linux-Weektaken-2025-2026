@@ -92,14 +92,14 @@ cat > playbooks/wordpress_final.yml << 'EOF'
     wp_db_password: "WpSecurePass456!"
     
   tasks:
-    # 1. System updates
+    1. System updates
     - name: Update and upgrade system
       apt:
         update_cache: yes
         upgrade: yes
         cache_valid_time: 3600
 
-    # 2. Create web directory
+    2. Create web directory
     - name: Ensure web directory exists
       file:
         path: /var/www/html
@@ -108,7 +108,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
         group: www-data
         mode: '0755'
 
-    # 3. Install Apache
+    3. Install Apache
     - name: Install Apache
       apt:
         name: apache2
@@ -120,7 +120,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
         state: started
         enabled: yes
 
-    # 4. Install MySQL (eenvoudigere versie)
+    1. Install MySQL (eenvoudigere versie)
     - name: Install MySQL server
       apt:
         name: mysql-server
@@ -132,7 +132,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
         state: started
         enabled: yes
 
-    # 5. Install PHP
+    5. Install PHP
     - name: Install PHP and required extensions
       apt:
         name:
@@ -146,7 +146,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
           - libapache2-mod-php
         state: present
 
-    # 6. Download and extract WordPress
+    6. Download and extract WordPress
     - name: Download WordPress
       shell: |
         cd /tmp
@@ -163,7 +163,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
       args:
         executable: /bin/bash
 
-    # 7. Configure WordPress database
+    7. Configure WordPress database
     - name: Create WordPress database and user
       shell: |
         mysql -u root -e "CREATE DATABASE IF NOT EXISTS ${wp_db_name};"
@@ -177,7 +177,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
         wp_db_user: "{{ wp_db_user }}"
         wp_db_password: "{{ wp_db_password }}"
 
-    # 8. Configure wp-config.php
+    8. Configure wp-config.php
     - name: Configure WordPress settings
       shell: |
         cd /var/www/html
@@ -192,7 +192,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
         wp_db_user: "{{ wp_db_user }}"
         wp_db_password: "{{ wp_db_password }}"
 
-    # 9. Enable Apache modules
+    9. Enable Apache modules
     - name: Enable required Apache modules
       shell: |
         a2enmod rewrite
@@ -200,7 +200,7 @@ cat > playbooks/wordpress_final.yml << 'EOF'
       args:
         executable: /bin/bash
 
-    # 10. Install monitoring
+    10. Install monitoring
     - name: Install monitoring tools
       apt:
         name:
@@ -217,12 +217,12 @@ cat > playbooks/wordpress_final.yml << 'EOF'
         - prometheus-node-exporter
         - rsyslog
 
-    # 11. Configure logging to main server
+    11. Configure logging to main server
     - name: Setup log forwarding
       copy:
         dest: /etc/rsyslog.d/99-forward.conf
         content: |
-          # Forward all logs to main server
+          Forward all logs to main server
           *.* @@172.16.0.4:514
         owner: root
         group: root
@@ -244,14 +244,14 @@ cat > playbooks/docker_final.yml << 'EOF'
   become: yes
   
   tasks:
-    # 1. Update system
+    1. Update system
     - name: Update and upgrade system
       apt:
         update_cache: yes
         upgrade: yes
         cache_valid_time: 3600
 
-    # 2. Install Docker
+    2. Install Docker
     - name: Install Docker
       apt:
         name: docker.io
@@ -263,14 +263,14 @@ cat > playbooks/docker_final.yml << 'EOF'
         state: started
         enabled: yes
 
-    # 3. Add user to docker group
+    3. Add user to docker group
     - name: Add current user to docker group
       shell: |
         usermod -aG docker {{ ansible_user }}
       args:
         executable: /bin/bash
 
-    # 4. Run Nginx container
+    4. Run Nginx container
     - name: Run Nginx web server
       shell: |
         docker run -d \
@@ -283,7 +283,7 @@ cat > playbooks/docker_final.yml << 'EOF'
       register: container_result
       changed_when: "'Created' in container_result.stdout or 'Started' in container_result.stdout"
 
-    # 5. Install monitoring
+    5. Install monitoring
     - name: Install monitoring tools
       apt:
         name:
@@ -300,19 +300,19 @@ cat > playbooks/docker_final.yml << 'EOF'
         - prometheus-node-exporter
         - rsyslog
 
-    # 6. Configure logging to main server
+    6. Configure logging to main server
     - name: Setup log forwarding
       copy:
         dest: /etc/rsyslog.d/99-forward.conf
         content: |
-          # Forward all logs to main server
+          Forward all logs to main server
           *.* @@172.16.0.4:514
         owner: root
         group: root
         mode: '0644'
       notify: restart rsyslog
 
-    # 7. Run Node Exporter for monitoring
+    7. Run Node Exporter for monitoring
     - name: Run Node Exporter container
       shell: |
         docker run -d \
